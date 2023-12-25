@@ -1,4 +1,4 @@
-name: Java CI
+name: Build and Deploy
 
 on:
   push:
@@ -10,13 +10,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Set up JDK 11
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up JDK
       uses: actions/setup-java@v2
       with:
         distribution: 'adopt'
         java-version: '11'
 
-    - name: Build and Run Java Application
-      run: |
-        javac AgeCalculator.java
-        java AgeCalculator
+    - name: Build with Maven
+      run: ./mvnw clean install
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    needs: build
+
+    steps:
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./target
